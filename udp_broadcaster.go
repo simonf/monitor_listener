@@ -5,17 +5,14 @@ import (
 	"net"
 	"os"
 	"simonf.net/monitor_db"
-	"sync"
 	"time"
 )
 
-const (
-	ServerPort    = ":41327"
-	BroadcastPort = 41238
-)
+const BroadcastPort = 41238
 
 var db = monitor_db.NewDatabase()
-var db_mutex = &sync.Mutex{}
+
+// var db_mutex = &sync.Mutex{}
 
 func PeriodicallyAdvertise() {
 	for {

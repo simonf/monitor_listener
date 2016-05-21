@@ -6,6 +6,8 @@ import (
 	"simonf.net/monitor_db"
 )
 
+const ServerPort = ":41237"
+
 func checkError(err error) {
 	if err != nil {
 		fmt.Println("Error: ", err)
@@ -15,37 +17,30 @@ func checkError(err error) {
 
 func ListenForClients() {
 	ListenForUDPClients(db)
-	// s := monitor_db.Service{Name: "test", Status: "ok", Updated: time.Now()}
-	// c := monitor_db.NewComputer("pizero", "ok", time.Now())
-	// c.SetService(&s)
-	// fmt.Println(c.JSON())
-	// db.AddComputer(c)
-	// db.PrintComputers()
 }
 
 func ListenForUDPClients(db *monitor_db.Database) {
-	serverAddr, err := net.ResolveUDPAddr("udp", ServerPort)
+	addr, err := net.ResolveUDPAddr("udp4", ":41237")
 	checkError(err)
 
-	/* Now listen at selected port */
-	serverConn, err := net.ListenUDP("udp", serverAddr)
-	checkError(err)
+	socket, err := net.ListenUDP("udp4", addr)
 
-	defer serverConn.Close()
+	fmt.Println("Listening for clients on 41237")
+
+	defer socket.Close()
 
 	buf := make([]byte, 20480)
 
 	for {
-		n, addr, err := serverConn.ReadFromUDP(buf)
+		n, addr, err := socket.ReadFromUDP(buf)
 		fmt.Println("Received ", string(buf[0:n]), " from ", addr)
 
 		if err != nil {
 			fmt.Println("Error: ", err)
 		} else {
-			c := monitor_db.NewComputerFromJSON(buf)
-			db_mutex.Lock()
+			c := monitor_db.NewComputerFromJSON(buf[0:n])
+			fmt.Printf("Unmarshalled computer %s. Adding it", c.Name)
 			db.AddComputer(c)
-			db_mutex.Unlock()
 		}
 	}
 }
