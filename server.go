@@ -50,7 +50,6 @@ func sendHTMLResponse(w http.ResponseWriter) {
       <meta charset="utf-8"/>
       <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
       <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    //meta(http-equiv="refresh" content="30")
       <title>Monitor</title>
       <link rel='stylesheet', href='/bootstrap-3.3.6-dist/css/bootstrap.min.css'/>
       <link rel='stylesheet', href='/font-awesome-4.5.0/css/font-awesome.min.css'/>
