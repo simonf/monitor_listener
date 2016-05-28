@@ -12,7 +12,7 @@ func StartServer(port int) {
 	ph := http.HandlerFunc(handler)
 	sh := http.FileServer(http.Dir("."))
 	http.Handle("/index.html", ph)
-	http.Handle("/", sh)
+	http.Handle("/*", sh)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), nil))
 }
 
@@ -52,11 +52,11 @@ func sendHTMLResponse(w http.ResponseWriter) {
       <meta name="viewport" content="width=device-width, initial-scale=1"/>
     //meta(http-equiv="refresh" content="30")
       <title>Monitor</title>
-      <link rel='stylesheet', href='bootstrap-3.3.6-dist/css/bootstrap.min.css'/>
-      <link rel='stylesheet', href='font-awesome-4.5.0/css/font-awesome.min.css'/>
-      <link rel='stylesheet', href='stylesheets/style.css'/>
-      <script src='javascripts/jquery-1.12.1.min.js'/>
-      <script src='bootstrap-3.3.6-dist/js/bootstrap.min.js'/>
+      <link rel='stylesheet', href='/bootstrap-3.3.6-dist/css/bootstrap.min.css'/>
+      <link rel='stylesheet', href='/font-awesome-4.5.0/css/font-awesome.min.css'/>
+      <link rel='stylesheet', href='/stylesheets/style.css'/>
+      <script src='/javascripts/jquery-1.12.1.min.js'/>
+      <script src='/bootstrap-3.3.6-dist/js/bootstrap.min.js'/>
     </head>
     <body>
       <div class='content'>
