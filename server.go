@@ -2,16 +2,17 @@ package monitor_listener
 
 import (
 	"bytes"
-	"fmt"
+	"html/template"
 	"log"
 	"net/http"
-	"simonf.net/monitor_db"
 	"strconv"
 )
 
 func StartServer(port int) {
 	ph := http.HandlerFunc(handler)
-	http.Handle("/", ph)
+	sh := http.FileServer(http.Dir("."))
+	http.Handle("/index.html", ph)
+	http.Handle("/", sh)
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), nil))
 }
 
@@ -21,8 +22,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		b := GetSiteStatusAsJSON()
 		w.Write(b)
 	} else {
-		s := GetSiteStatusAsHTML()
-		sendHTMLResponse(w, s)
+		sendHTMLResponse(w)
 	}
 }
 
@@ -42,60 +42,63 @@ func GetSiteStatusAsJSON() []byte {
 	return buffer.Bytes()
 }
 
-func GetSiteStatusAsHTML() string {
-	var buffer bytes.Buffer
-	for _, c := range db.ListComputers() {
-		buffer.WriteString(computerAsDiv(c))
+func sendHTMLResponse(w http.ResponseWriter) {
+	const tpl = `
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <meta charset="utf-8"/>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+      <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    //meta(http-equiv="refresh" content="30")
+      <title>Monitor</title>
+      <link rel='stylesheet', href='/bootstrap-3.3.6-dist/css/bootstrap.min.css'/>
+      <link rel='stylesheet', href='/font-awesome-4.5.0/css/font-awesome.min.css'/>
+      <link rel='stylesheet', href='/stylesheets/style.css'/>
+      <script src='/javascripts/jquery-1.12.1.min.js'/>
+      <script src='/bootstrap-3.3.6-dist/js/bootstrap.min.js'/>
+    </head>
+    <body>
+      <div class='content'>
+        <div class='container-fluid'>
+          <h1>Monitor</h1>
+          <div class='row'>
+          {{range .}}
+          <div class='col-xs12 col-sm-12 col-md-12 col-lg-6'>
+            <div class='row'>
+              <div class='col-xs-12 col-sm-12 col-md-12' id='agent'>
+                <div class='{{ .Status }}'>
+                  <h3><a data-target='#{{ .Name }}' data-toggle='collapse'  href='#{{ .Name }}'>{{ .Name }} &nbsp; {{ .Status }}</a></h3>
+                  <p>{{ .IP }}<br/>{{ .Updated }}</p>
+                  {{if .Status }}
+                    <div class='collapse' id='{{ .Name }}'>
+                    {{range .Services}}
+                      <div class='row'>
+                        <div class='col-xs-12 col-sm-12 col-md-12'>
+                          <p>
+                            <a class='{{if .Status}}btn btn-lg btn-block btn-success{{else}}btn btn-lg btn-block btn-danger{{end}}' title='{{ .Name }}'>
+                              <span class='{{ .Status }}' title='dummy'>{{ .Name}}</span>
+                            </a>
+                          </p>
+                        </div>
+                      </div>
+                    {{end}}
+                    </div>
+                  {{end}}
+                </div>
+              </div>
+            </div>
+          </div>
+          {{end}}
+         </div>
+        </div>
+      </div>
+    </body>
+  </html>
+  `
+	t := template.Must(template.New("webpage").Parse(tpl))
+	err := t.Execute(w, db.ListComputers())
+	if err != nil {
+		log.Println("executing template:", err)
 	}
-	return buffer.String()
-}
-
-func sendHTMLResponse(w http.ResponseWriter, content string) {
-	var buffer bytes.Buffer
-	buffer.WriteString("<html><head><title>Monitor</title></head><body><h1>Site status</h1>\n")
-	buffer.WriteString("<div class=\"computer_list\"")
-	buffer.WriteString(content)
-	buffer.WriteString("</div>\n</body>\n</html>")
-	w.Write(buffer.Bytes())
-}
-
-func computerAsDiv(c *monitor_db.Computer) string {
-	var buffer bytes.Buffer
-	buffer.WriteString("<div class=\"computer\">\n")
-	buffer.WriteString("\t<div class=\"name\">")
-	buffer.WriteString(c.Name)
-	buffer.WriteString("\t</div>\n")
-	buffer.WriteString("\t<div class=\"status\">")
-	buffer.WriteString(c.Status)
-	buffer.WriteString("\t</div>\n")
-	buffer.WriteString("\t<div class=\"updated\">")
-	buffer.WriteString(c.Updated.String())
-	buffer.WriteString("\t</div>\n")
-	buffer.WriteString("\t<div class=\"services\">")
-	for _, svc := range c.Services {
-		buffer.WriteString(serviceAsDiv(svc))
-	}
-	buffer.WriteString("\t</div>\n")
-	buffer.WriteString("</div>\n")
-	return buffer.String()
-}
-
-func serviceAsDiv(s *monitor_db.Service) string {
-	var buffer bytes.Buffer
-	buffer.WriteString("<div class=\"service\">\n")
-	buffer.WriteString("\t<div class=\"name\">")
-	buffer.WriteString(s.Name)
-	buffer.WriteString("\t</div>\n")
-	buffer.WriteString("\t<div class=\"status\">")
-	buffer.WriteString(s.Status)
-	buffer.WriteString("\t</div>\n")
-	buffer.WriteString("\t<div class=\"updated\">")
-	buffer.WriteString(s.Updated.String())
-	buffer.WriteString("\t</div>\n")
-	buffer.WriteString("</div>\n")
-	return buffer.String()
-}
-
-func makeStatus(url string, status string) string {
-	return fmt.Sprintf("<tr><td>%s</td><td>%s</td></tr>", url, status)
 }

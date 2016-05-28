@@ -7,6 +7,7 @@ import (
 )
 
 const ServerPort = ":41237"
+const MinHoursBeforePurge = 1
 
 func checkError(err error) {
 	if err != nil {
@@ -39,16 +40,9 @@ func ListenForUDPClients(db *monitor_db.Database) {
 			fmt.Println("Error: ", err)
 		} else {
 			c := monitor_db.NewComputerFromJSON(buf[0:n])
-			fmt.Printf("Unmarshalled computer %s. Adding it", c.Name)
+			c.IP = addr.String()
+			db.PurgeOldComputers(MinHoursBeforePurge)
 			db.AddComputer(c)
 		}
 	}
 }
-
-// func stripPort(udp_host_and_port string) string {
-//   fmt.Println("Server: ", udp_host_and_port)
-//   i := strings.Index(udp_host_and_port, ":")
-//   pruned := udp_host_and_port[0:i]
-//   fmt.Printf("Colon at %v gives %v\n", i, pruned)
-//   return string(pruned)
-// }
