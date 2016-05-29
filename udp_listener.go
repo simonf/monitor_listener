@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"simonf.net/monitor_db"
+	"strings"
 )
 
 const ServerPort = ":41237"
@@ -34,15 +35,19 @@ func ListenForUDPClients(db *monitor_db.Database) {
 
 	for {
 		n, addr, err := socket.ReadFromUDP(buf)
-		fmt.Println("Received ", string(buf[0:n]), " from ", addr)
+		// fmt.Println("Received ", string(buf[0:n]), " from ", addr)
 
 		if err != nil {
 			fmt.Println("Error: ", err)
 		} else {
 			c := monitor_db.NewComputerFromJSON(buf[0:n])
-			c.IP = addr.String()
+			c.IP = StripPort(addr.String())
 			db.PurgeOldComputers(MinHoursBeforePurge)
 			db.AddComputer(c)
 		}
 	}
+}
+
+func StripPort(ipaddr string) string {
+	return strings.Split(ipaddr, ":")[0]
 }

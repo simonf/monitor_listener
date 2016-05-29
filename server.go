@@ -84,9 +84,20 @@ func sendHTMLResponse(w http.ResponseWriter) {
                       <div class='row'>
                         <div class='col-xs-12 col-sm-12 col-md-12'>
                           <p>
-                            <a class='btn btn-lg btn-block btn-danger' title='{{.Name}}'>
-                              <span class='{{ .Status }}' title='dummy'>{{.Name}}</span>
-                            </a>
+                            {{if eq .Status "OK"}}
+                              <a class='btn btn-lg btn-block btn-success' title='{{.Name}}'>
+                                <span class='{{ .Status }}' title='dummy'>{{.Name}}</span>
+                              </a>
+                            {{end}}
+                            {{if eq .Status "Old"}}
+                              <a class='btn btn-lg btn-block btn-warning' title='{{.Name}}'>
+                                <span class='{{ .Status }}' title='dummy'>{{.Name}}</span>
+                              </a>
+                            {{else}}
+                              <a class='btn btn-lg btn-block btn-danger' title='{{.Name}}'>
+                                <span class='{{ .Status }}' title='dummy'>{{.Name}}</span>
+                              </a>
+                            {{end}}
                           </p>
                         </div>
                       </div>
