@@ -31,7 +31,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 func GetSiteStatusAsJSON() []byte {
 	var buffer bytes.Buffer
 	is_subsequent := false
-	buffer.WriteString("{[")
+	buffer.WriteString("{\"data\": [")
 	for _, c := range db.ListComputers() {
 		if is_subsequent {
 			buffer.WriteString(",")
@@ -88,15 +88,16 @@ func sendHTMLResponse(w http.ResponseWriter) {
                               <a class='btn btn-lg btn-block btn-success' title='{{.Name}}'>
                                 <span class='{{ .Status }}' title='dummy'>{{.Name}}</span>
                               </a>
-                            {{end}}
-                            {{if eq .Status "Old"}}
-                              <a class='btn btn-lg btn-block btn-warning' title='{{.Name}}'>
-                                <span class='{{ .Status }}' title='dummy'>{{.Name}}</span>
-                              </a>
                             {{else}}
-                              <a class='btn btn-lg btn-block btn-danger' title='{{.Name}}'>
-                                <span class='{{ .Status }}' title='dummy'>{{.Name}}</span>
-                              </a>
+                              {{if eq .Status "Old"}}
+                                <a class='btn btn-lg btn-block btn-warning' title='{{.Name}}'>
+                                  <span class='{{ .Status }}' title='dummy'>{{.Name}}</span>
+                                </a>
+                              {{else}}
+                                <a class='btn btn-lg btn-block btn-danger' title='{{.Name}}'>
+                                  <span class='{{ .Status }}' title='dummy'>{{.Name}}</span>
+                                </a>
+                              {{end}}
                             {{end}}
                           </p>
                         </div>
