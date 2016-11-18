@@ -35,8 +35,11 @@ func GetSiteStatusAsJSON() []byte {
 	buffer.WriteString("{\"data\": [")
 	for _, c := range db.ListComputers() {
 		age := time.Since(c.Updated).Minutes()
+		if age > 30.0 {
+			c.Status = "Amber"
+		}
 		if age > 60.0 {
-			c.Status = "Green"
+			c.Status = "Red"
 		}
 		if is_subsequent {
 			buffer.WriteString(",")

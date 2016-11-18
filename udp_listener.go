@@ -8,7 +8,7 @@ import (
 )
 
 const ServerPort = ":41237"
-const MinHoursBeforePurge = 1
+const MinHoursBeforePurge = 12
 
 func checkError(err error) {
 	if err != nil {
