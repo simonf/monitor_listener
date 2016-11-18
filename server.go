@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func StartServer(port int) {
@@ -33,6 +34,10 @@ func GetSiteStatusAsJSON() []byte {
 	is_subsequent := false
 	buffer.WriteString("{\"data\": [")
 	for _, c := range db.ListComputers() {
+		age := time.Since(c.Updated).Minutes()
+		if age > 60.0 {
+			c.Status = "Green"
+		}
 		if is_subsequent {
 			buffer.WriteString(",")
 		} else {
